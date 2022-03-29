@@ -29,22 +29,39 @@ def main():
 
     result_pids = []
     result_names = []
+    NUM_RESULTS = 5
     for name in in_names:
         results = process.extract(
             (fuzz.utils.full_process(name), name),
             names,
-            limit=5,
+            limit=NUM_RESULTS,
             scorer=fuzz.WRatio,
             processor=lambda x: x[0],
         )
 
-        print(name)
-        for i, result in enumerate(results):
-            print(f"    [{i + 1}] {format_result(result)}")
+        go_to_next = False
+        while not go_to_next:
+            print(name)
+            for i, result in enumerate(results):
+                print(f"    [{i + 1}] {format_result(result)}")
+            print(f"    [{NUM_RESULTS + 1}] No match")
 
-        correct_index = int(input("Which is correct? ")) - 1
-        result_pids.append(results[correct_index][2])
-        result_names.append(results[correct_index][0][1])
+            try:
+                correct_index = int(input("Which is correct? ")) - 1
+            except ValueError:
+                print("\ntry again\n")
+            else:
+                if correct_index == NUM_RESULTS:
+                    result_pids.append("")
+                    result_names.append("")
+                    go_to_next = True
+                elif correct_index in range(NUM_RESULTS):
+                    result_pids.append(results[correct_index][2])
+                    result_names.append(results[correct_index][0][1])
+                    go_to_next = True
+                else:
+                    print("\ntry again\n")
+
 
     outfile_name = input("Enter outfile name or press Enter to copy to clipboard: ")
     if len(outfile_name) < 2:
